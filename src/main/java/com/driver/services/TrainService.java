@@ -2,10 +2,7 @@ package com.driver.services;
 
 import com.driver.EntryDto.AddTrainEntryDto;
 import com.driver.EntryDto.SeatAvailabilityEntryDto;
-import com.driver.model.Passenger;
-import com.driver.model.Station;
-import com.driver.model.Ticket;
-import com.driver.model.Train;
+import com.driver.model.*;
 import com.driver.repository.TicketRepository;
 import com.driver.repository.TrainRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +10,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class TrainService {
@@ -51,7 +46,7 @@ public class TrainService {
         return trainRepository.save(train).getTrainId();
     }
 
-    public Integer calculateAvailableSeats(SeatAvailabilityEntryDto seatAvailabilityEntryDto){
+   // public Integer calculateAvailableSeats(SeatAvailabilityEntryDto seatAvailabilityEntryDto){
 
         //Calculate the total seats available
         //Suppose the route is A B C D
@@ -62,11 +57,71 @@ public class TrainService {
         //Inshort : a train has totalNo of seats and there are tickets from and to different locations
         //We need to find out the available seats between the given 2 stations.
 
-       return null;
+      // return null;
 
         // Get the train from the database using the trainId
 
+
+   // }
+
+    public Integer calculateAvailableSeats(SeatAvailabilityEntryDto seatAvailabilityEntryDto) throws TrainNotFoundException {
+        int trainId = seatAvailabilityEntryDto.getTrainId();
+        Station fromStation = seatAvailabilityEntryDto.getFromStation();
+        Station toStation = seatAvailabilityEntryDto.getToStation();
+
+        Optional<Train> train = trainRepository.findById(trainId);
+        if (train == null) {
+            throw new TrainNotFoundException("Train with ID " + trainId + " not found");
+        }
+
+// Calculate the number of seats that have already been booked
+        int bookedSeats = 0;
+        List<Ticket> bookedTickets = train.get().getBookedTickets();
+        if (bookedTickets != null) {
+            for (Ticket ticket : bookedTickets) {
+                if (ticket.getFromStation().equals(fromStation) && ticket.getToStation().equals(toStation)) {
+                    bookedSeats += ticket.getPassengersList().size();
+                }
+            }
+        }
+
+// Calculate the number of available seats
+        int availableSeats = train.get().getNoOfSeats() - bookedSeats;
+
+        return availableSeats;
+
+
+
     }
+
+
+
+    private boolean isSeatBookedOnRoute(Ticket ticket, SeatAvailabilityEntryDto seatAvailabilityEntryDto) {
+        Station departureStation = seatAvailabilityEntryDto.getFromStation();
+        Station destinationStation = seatAvailabilityEntryDto.getToStation();
+
+        Station ticketDepartureStation = ticket.getFromStation();
+        Station ticketDestinationStation = ticket.getToStation();
+
+        // Check if the ticket is between departureStation and destinationStation
+        if (ticketDepartureStation.equals(departureStation) && ticketDestinationStation.equals(destinationStation)) {
+            return true;
+        }
+
+        // Check if the ticket crosses departureStation or destinationStation
+        List<String> routeStations = Arrays.asList(seatAvailabilityEntryDto.toString());
+        int departureIndex = routeStations.indexOf(departureStation);
+        int destinationIndex = routeStations.indexOf(destinationStation);
+        int ticketDepartureIndex = routeStations.indexOf(ticketDepartureStation);
+        int ticketDestinationIndex = routeStations.indexOf(ticketDestinationStation);
+
+        if (ticketDepartureIndex >= departureIndex && ticketDestinationIndex <= destinationIndex) {
+            return true;
+        }
+
+        return false;
+    }
+
 
     public Integer calculatePeopleBoardingAtAStation(Integer trainId,Station station) throws Exception{
 

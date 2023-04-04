@@ -3,6 +3,7 @@ package com.driver.controllers;
 import com.driver.EntryDto.AddTrainEntryDto;
 import com.driver.EntryDto.SeatAvailabilityEntryDto;
 import com.driver.model.Station;
+import com.driver.model.TrainNotFoundException;
 import com.driver.services.TrainService;
 import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ public class TrainController {
     }
 
     @GetMapping("/calculate-avaiable-seats")
-    public Integer checkSeatAvailability(@RequestBody SeatAvailabilityEntryDto seatAvailabilityEntryDto){
+    public Integer checkSeatAvailability(@RequestBody SeatAvailabilityEntryDto seatAvailabilityEntryDto) throws TrainNotFoundException {
         Integer count = trainService.calculateAvailableSeats(seatAvailabilityEntryDto);
         return count;
     }
