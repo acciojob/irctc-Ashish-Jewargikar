@@ -45,4 +45,5 @@ public class AddTrainEntryDto {
     public void setNoOfSeats(int noOfSeats) {
         this.noOfSeats = noOfSeats;
     }
+
 }
