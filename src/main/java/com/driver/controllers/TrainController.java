@@ -3,7 +3,6 @@ package com.driver.controllers;
 import com.driver.EntryDto.AddTrainEntryDto;
 import com.driver.EntryDto.SeatAvailabilityEntryDto;
 import com.driver.model.Station;
-import com.driver.model.TrainNotFoundException;
 import com.driver.services.TrainService;
 import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +34,7 @@ public class TrainController {
     }
 
     @GetMapping("/calculate-avaiable-seats")
-    public Integer checkSeatAvailability(@RequestBody SeatAvailabilityEntryDto seatAvailabilityEntryDto) throws TrainNotFoundException {
+    public Integer checkSeatAvailability(@RequestBody SeatAvailabilityEntryDto seatAvailabilityEntryDto){
         Integer count = trainService.calculateAvailableSeats(seatAvailabilityEntryDto);
         return count;
     }
@@ -67,7 +66,7 @@ public class TrainController {
     @GetMapping("get-list-of-trains-arriving-in-a-range-of-time")
     public List<Integer> calculateListOfTrainIdsAtAStationInAParticularTimeRange(@RequestParam("station")Station station,
                                                                                  @RequestParam("startTime")LocalTime startTime
-                                                                                 ,@RequestParam("endTime")LocalTime endTime){
+            ,@RequestParam("endTime")LocalTime endTime){
 
         return trainService.trainsBetweenAGivenTime(station,startTime,endTime);
     }
