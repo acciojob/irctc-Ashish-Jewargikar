@@ -65,34 +65,34 @@ public class TrainService {
    // }
 
     public Integer calculateAvailableSeats(SeatAvailabilityEntryDto seatAvailabilityEntryDto) throws TrainNotFoundException {
-        int trainId = seatAvailabilityEntryDto.getTrainId();
-        Station fromStation = seatAvailabilityEntryDto.getFromStation();
-        Station toStation = seatAvailabilityEntryDto.getToStation();
+       // public Integer calculateAvailableSeats(SeatAvailabilityEntryDto seatAvailabilityEntryDto) throws TrainNotFoundException {
+            int trainId = seatAvailabilityEntryDto.getTrainId();
+            Station fromStation = seatAvailabilityEntryDto.getFromStation();
+            Station toStation = seatAvailabilityEntryDto.getToStation();
 
-        Optional<Train> train = trainRepository.findById(trainId);
-        if (train == null) {
-            throw new TrainNotFoundException("Train with ID " + trainId + " not found");
-        }
+            // Find the train with the given ID
+        Train train = trainRepository.findById(trainId)
+                .orElseThrow(() -> new TrainNotFoundException("Train with ID " + trainId + " not found"));
 
-// Calculate the number of seats that have already been booked
-        int bookedSeats = 0;
-        List<Ticket> bookedTickets = train.get().getBookedTickets();
-        if (bookedTickets != null) {
-            for (Ticket ticket : bookedTickets) {
-                if (ticket.getFromStation().equals(fromStation) && ticket.getToStation().equals(toStation)) {
-                    bookedSeats += ticket.getPassengersList().size();
+
+            // Calculate the number of seats that have already been booked
+            int bookedSeats = 0;
+            List<Ticket> bookedTickets = train.getBookedTickets();
+            if (bookedTickets != null) {
+                for (Ticket ticket : bookedTickets) {
+                    if (ticket.getFromStation().equals(fromStation) && ticket.getToStation().equals(toStation)) {
+                        bookedSeats += ticket.getPassengersList().size();
+                    }
                 }
             }
+
+            // Calculate the number of available seats
+            int availableSeats = train.getNoOfSeats() - bookedSeats;
+
+            return availableSeats;
         }
 
-// Calculate the number of available seats
-        int availableSeats = train.get().getNoOfSeats() - bookedSeats;
 
-        return availableSeats;
-
-
-
-    }
 
 
 
